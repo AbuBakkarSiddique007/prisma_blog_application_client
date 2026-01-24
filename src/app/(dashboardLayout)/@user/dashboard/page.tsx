@@ -1,13 +1,13 @@
 import React from 'react';
 
-const WriteBlogPage = () => {
+const UserDashboard = () => {
     return (
         <div>
             <h1>
-                This is Blog Page
+                User Dashboard
             </h1>
         </div>
     );
 };
 
-export default WriteBlogPage;
+export default UserDashboard;

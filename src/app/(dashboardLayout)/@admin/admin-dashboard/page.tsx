@@ -1,13 +1,13 @@
 import React from 'react';
 
-const Weekly = () => {
+const AdminDashboard = () => {
     return (
         <div>
             <h1>
-                Weekly
+                Admin Dashboard
             </h1>
         </div>
     );
 };
 
-export default Weekly;
+export default AdminDashboard;
