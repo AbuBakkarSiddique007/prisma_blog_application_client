@@ -1,11 +1,5 @@
 const UserDefault = () => {
-return (
-        <div>
-            <h1>
-                User Default Page
-            </h1>
-        </div>
-    );
+return null
 };
 
 export default UserDefault;
