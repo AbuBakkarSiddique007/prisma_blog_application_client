@@ -1,40 +1,37 @@
-import { headers } from "next/headers";
 import { env } from "../../env";
+import { cookies } from "next/headers";
 
-const API_URL = env.API_URL;
+const AUTH_URL = env.AUTH_URL;
 
 export const userService = {
-    getSession: async () => {
+    getSession: async function () {
         try {
-            const headersList = await headers();
-            const cookieHeader = headersList.get("cookie") ?? "";
+            const cookieStore = await cookies();
 
-            const res = await fetch(`${API_URL}/get-session`, {
-                headers: cookieHeader ? { cookie: cookieHeader } : undefined,
+            console.log(cookieStore.toString());
+
+            const res = await fetch(`${AUTH_URL}/get-session`, {
+                headers: {
+                    Cookie: cookieStore.toString(),
+                },
                 cache: "no-store",
-                credentials: "include",
             });
 
-            if (!res.ok) {
-                const body = await res.text().catch(() => "");
-                throw new Error(`fetch failed ${res.status} ${res.statusText} ${body}`.trim());
+            const session = await res.json();
+
+            if (session === null) {
+                return {
+                    data: null,
+                    error: { message: "Session is missing." }
+                };
             }
 
-            const sessionData = await res.json();
-
-            if (!sessionData) {
-                return { data: null, error: "No active session" };
-            }
-
-            return {
-                data: sessionData,
-                error: null
-            };
-        } catch (error) {
-            console.error("Error fetching session data:", error);
+            return { data: session, error: null };
+        } catch (err) {
+            console.error(err);
             return {
                 data: null,
-                error: error instanceof Error ? error.message : "Failed to fetch session data",
+                error: { message: "Something Went Wrong" }
             };
         }
     },
