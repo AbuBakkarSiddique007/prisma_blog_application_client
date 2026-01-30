@@ -1,16 +1,18 @@
 import { env } from "../../env"
+import type { BlogPost, BlogApiResponse } from "@/types/blog.type"
 
 const API_URL = env.API_URL
 
-
 export const blogService = {
-    getAllBlogs: async () => {
+    getAllBlogs: async (): Promise<{ data: BlogPost[] | null; error: string | null }> => {
         try {
-            const res = await fetch(`${API_URL}/posts`)
-            const data = await res.json()
+            const res = await fetch(`${API_URL}/posts`, {
+                next: { revalidate: 10 },
+            })
+            const json = (await res.json()) as BlogApiResponse
 
             return {
-                data: data,
+                data: json.data.data,
                 error: null
             }
 
