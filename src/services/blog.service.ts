@@ -1,20 +1,58 @@
 import { env } from "../../env"
-import type { BlogPost, BlogApiResponse } from "@/types/blog.type"
+import type { BlogApiResponse } from "@/types/blog.type"
 
 const API_URL = env.API_URL
 
+interface GetBlogsParams {
+    isFeatured?: boolean,
+    search?: string,
+}
+
+interface ServiceOptions {
+    cache? : RequestCache,
+    revalidate?: number,
+}
+
 export const blogService = {
-    getAllBlogs: async (): Promise<{ data: BlogPost[] | null; error: string | null }> => {
+    getAllBlogs: async (params?: GetBlogsParams, options?: ServiceOptions) => {
         try {
-            const res = await fetch(`${API_URL}/posts`, {
-                next: { revalidate: 10 },
-            })
+
+
+
+            const url = new URL(`${API_URL}/posts`)
+            url.searchParams.append("key", "value")
+
+            if (params) {
+                Object.entries(params).forEach(([key, value]) => {
+                    if (value !== undefined && value !== null && value !== '') {
+                        url.searchParams.append(key, String(value))
+                    }
+                })
+            }
+
+            console.log(url.toString());
+
+
+            const config : RequestInit = {}
+
+            if (options?.cache) {
+                config.cache = options.cache
+            }
+
+            if(options?.revalidate ) {
+                config.next = { revalidate: options.revalidate }
+            }
+
+
+            const res = await fetch(url.toString(), config)
+
             const json = (await res.json()) as BlogApiResponse
 
             return {
                 data: json.data.data,
                 error: null
             }
+
 
         } catch (err: unknown) {
             const message = err instanceof Error ? err.message : String(err);

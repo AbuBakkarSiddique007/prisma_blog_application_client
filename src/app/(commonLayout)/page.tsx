@@ -2,8 +2,18 @@ import { BlogCard } from "@/components/modules/homepage/BlogCard";
 import { blogService } from "@/services/blog.service";
 import { BlogPost } from "@/types";
 
+
+
+
 export default async function Home() {
-  const { data } = await blogService.getAllBlogs();
+  const { data } = await blogService.getAllBlogs({
+    isFeatured: true
+  },
+    {
+      cache: "no-store",
+    });
+
+
   console.log(data);
 
   return (
@@ -12,11 +22,11 @@ export default async function Home() {
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
 
         {
-        data?.map((blog: BlogPost) => (
+          data?.map((blog: BlogPost) => (
 
-          <BlogCard key={blog.id} blog={blog} />
+            <BlogCard key={blog.id} blog={blog} />
 
-        ))}
+          ))}
 
       </div>
     </div>
