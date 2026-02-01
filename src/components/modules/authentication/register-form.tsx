@@ -17,32 +17,57 @@ import {
   FieldLabel,
 } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
+import { authClient } from "@/lib/auth-client"
 import { useForm } from "@tanstack/react-form"
+import { toast } from "sonner"
 import * as z from "zod"
 
 const formSchema = z.object({
   name: z.string().min(2, { message: "Name must be at least 2 characters." }),
-
   email: z.string().email({ message: "Invalid email address." }),
   password: z.string().min(6, { message: "Password must be at least 6 characters." }),
-
-
 })
 
 export function RegisterForm({ ...props }: React.ComponentProps<typeof Card>) {
 
+  // Google Auth system :
+  const handleGoogleLogin = async () => {
+    const data = await authClient.signIn.social({
+      provider: "google",
+      callbackURL: "http://localhost:3000" 
+    })
+
+    console.log("Data : ", data);
+  }
+
+  // Register Form system :
   const form = useForm({
     defaultValues: {
       name: "",
       email: "",
-      password: ""
+      password: "",
     },
     validators: {
       onSubmit: formSchema
 
     },
     onSubmit: async ({ value }) => {
-      console.log(value);
+      try {
+        const toastId = toast.loading("Creating User...")
+        const { name, email, password } = value
+        const { data, error } = await authClient.signUp.email({ name, email, password })
+
+        if (error) {
+          toast.error(error.message, { id: toastId })
+          return
+        }
+
+        toast.success("User created successfully! Please check your email to verify your account.", { id: toastId })
+
+      } catch (error) {
+
+        toast.error("Something went wrong. Please try again.")
+      }
     }
   })
 
@@ -57,7 +82,7 @@ export function RegisterForm({ ...props }: React.ComponentProps<typeof Card>) {
       </CardHeader>
       <CardContent>
         <form
-          id="login-form"
+          id="register-form"
           onSubmit={(e) => {
             e.preventDefault();
             form.handleSubmit();
@@ -77,6 +102,9 @@ export function RegisterForm({ ...props }: React.ComponentProps<typeof Card>) {
                     id={field.name}
                     value={field.state.value}
                     onChange={(e) => field.handleChange(e.target.value)}
+                    autoComplete="name"
+                    autoCapitalize="words"
+                    aria-invalid={isInvalid}
 
                   ></Input>
 
@@ -103,7 +131,10 @@ export function RegisterForm({ ...props }: React.ComponentProps<typeof Card>) {
                     id={field.name}
                     value={field.state.value}
                     onChange={(e) => field.handleChange(e.target.value)}
-
+                    autoComplete="email"
+                    autoCapitalize="none"
+                    suppressHydrationWarning
+                    aria-invalid={isInvalid}
                   ></Input>
 
                   {
@@ -129,7 +160,9 @@ export function RegisterForm({ ...props }: React.ComponentProps<typeof Card>) {
                     id={field.name}
                     value={field.state.value}
                     onChange={(e) => field.handleChange(e.target.value)}
-
+                    autoComplete="new-password"
+                    suppressHydrationWarning
+                    aria-invalid={isInvalid}
                   ></Input>
 
                   {
@@ -142,18 +175,27 @@ export function RegisterForm({ ...props }: React.ComponentProps<typeof Card>) {
               }}
             />
 
-
           </FieldGroup>
-
         </form>
       </CardContent>
 
 
-      <CardFooter className="flex justify-end">
-        <Button form="login-form" type="submit">Register</Button>
+      <CardFooter className="flex flex-col gap-4">
+        <Button
+          form="register-form"
+          type="submit"
+          className="w-full"
+          disabled={form.state.isSubmitting}
+          aria-disabled={form.state.isSubmitting}
+        >
+          {form.state.isSubmitting ? "Registering..." : "Register"}
+        </Button>
+
+        <Button className="w-full" onClick={() => handleGoogleLogin()} variant="outline" type="button">
+          Login with Google
+        </Button>
+
       </CardFooter>
-
-
     </Card>
   )
 }
