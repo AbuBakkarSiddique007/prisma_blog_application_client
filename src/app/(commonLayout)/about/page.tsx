@@ -1,14 +1,28 @@
 "use client";
 
-// import { setTimeout as delay } from "timers/promises";
+import { getBlogs } from "@/actions/blog.action";
+import type { BlogPost } from "@/types/blog.type";
+import { useEffect, useState } from "react";
 
-
-// export const dynamic = "force-dynamic";
+type BlogResponse = {
+    data: BlogPost[] | null;
+    error: string | null;
+};
 
 const AboutPage = () => {
-    // await delay(4000)
 
-    // throw new Error("Something went wrong!!!")
+    const [data, setData] = useState<BlogResponse | null>(null)
+    const [error, setError] = useState<string | null>(null)
+
+    useEffect(() => {
+        (async () => {
+            const data = await getBlogs()
+            setData(data);
+            setError(data.error);
+            console.log("About Page Data:", data);
+        })()
+    }, []);
+
 
     return (
         <div>

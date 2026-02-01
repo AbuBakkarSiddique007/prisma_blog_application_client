@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/card"
 import type { BlogPost } from "@/types/blog.type"
 import { Eye, MessageCircle } from "lucide-react"
+import Link from "next/link"
 
 interface BlogCardProps {
   blog: BlogPost
@@ -17,6 +18,8 @@ interface BlogCardProps {
 
 export function BlogCard({ blog }: BlogCardProps) {
   const placeholderImage = `https://avatar.vercel.sh/${blog.id}`
+
+  console.log("Blog Id :",  blog.id);
 
   return (
     <Card className="relative mx-auto w-full max-w-sm overflow-hidden pt-0">
@@ -69,7 +72,12 @@ export function BlogCard({ blog }: BlogCardProps) {
       </div>
 
       <CardFooter>
-        <Button className="w-full">Read More</Button>
+        {/* <Button  className="w-full">Read More</Button> */}
+
+        <Button asChild className="w-full">
+          <Link href={`/blogs/${blog.id}`}>Read More</Link>
+        </Button>
+
       </CardFooter>
     </Card>
   )
