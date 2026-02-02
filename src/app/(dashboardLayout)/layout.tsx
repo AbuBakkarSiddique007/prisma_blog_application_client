@@ -30,9 +30,6 @@ export default function DashboardLayout(
     role: "admin"
   }
 
-
-
-
   return (
     <SidebarProvider>
       <AppSidebar user={userInfo} />

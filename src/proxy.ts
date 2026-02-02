@@ -2,7 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import Roles from "./constants/role";
 import { env } from "../env";
 
+// session endpoint is provided by the auth service
 const API_URL = env.API_URL;
+const AUTH_URL = env.AUTH_URL;
 
 
 export async function proxy(req: NextRequest) {
@@ -16,7 +18,7 @@ export async function proxy(req: NextRequest) {
     let isAdmin = false;
 
     try {
-        const res = await fetch(`${API_URL}/get-session`, {
+        const res = await fetch(`${AUTH_URL}/get-session`, {
             headers: cookieHeader ? { cookie: cookieHeader } : {},
             cache: "no-store",
         });

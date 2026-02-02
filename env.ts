@@ -13,6 +13,7 @@ export const env = createEnv({
     // example for client env variables
     client: {
         NEXT_PUBLIC_URL: z.string().url(),
+        NEXT_PUBLIC_AUTH_URL: z.string().url().optional(),
     },
 
     runtimeEnv: {
@@ -21,5 +22,6 @@ export const env = createEnv({
         API_URL: process.env.API_URL,
         AUTH_URL: process.env.AUTH_URL,
         NEXT_PUBLIC_URL: process.env.NEXT_PUBLIC_URL,
+        NEXT_PUBLIC_AUTH_URL: process.env.NEXT_PUBLIC_AUTH_URL,
     },
 })

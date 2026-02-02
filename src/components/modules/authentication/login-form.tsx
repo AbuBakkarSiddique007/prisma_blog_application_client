@@ -18,6 +18,8 @@ import {
 } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { authClient } from "@/lib/auth-client"
+import { useRouter } from "next/navigation"
+import Roles from "@/constants/role"
 import { useForm } from "@tanstack/react-form"
 import { toast } from "sonner"
 import * as z from "zod"
@@ -29,6 +31,7 @@ const formSchema = z.object({
 
 export function LoginForm({ ...props }: React.ComponentProps<typeof Card>) {
 
+  const router = useRouter()
   // Google Auth system :
   const handleGoogleLogin = async () => {
     const data = await authClient.signIn.social({
@@ -52,15 +55,58 @@ export function LoginForm({ ...props }: React.ComponentProps<typeof Card>) {
     onSubmit: async ({ value }) => {
       try {
         const toastId = toast.loading("Logging in...")
-        const { email, password } = value
-        const { data, error } = await authClient.signIn.email({ email, password })
+          const { email, password } = value
+          const { data, error } = await authClient.signIn.email({ email, password })
 
-        if (error) {
-          toast.error(error.message, { id: toastId })
-          return
-        }
+          if (error) {
+            toast.error(error.message, { id: toastId })
+            return
+          }
 
-        toast.success("Logged in successfully!", { id: toastId })
+          toast.success("Logged in successfully!", { id: toastId })
+
+          // Log the response to help debug why role might be missing
+          console.log("signIn.email response:", { data, error })
+
+          // Try to read session from backend (requires backend to set cookie and allow credentials)
+          try {
+            const API_BASE = (process.env.NEXT_PUBLIC_AUTH_URL as string) || "http://localhost:5000"
+            const sessionRes = await fetch(`${API_BASE}/get-session`, {
+              credentials: "include",
+              cache: "no-store",
+            })
+
+            if (sessionRes.ok) {
+              const sessionData = await sessionRes.json()
+              const roleFromSession = sessionData?.user?.role
+              if (roleFromSession === Roles.ADMIN) {
+                router.push("/admin-dashboard")
+                return
+              }
+              if (roleFromSession) {
+                router.push("/dashboard")
+                return
+              }
+            } else {
+              console.warn("Session fetch after sign-in failed:", sessionRes.status)
+            }
+          } catch (err) {
+            console.error("Session fetch error after sign-in:", err)
+          }
+
+          // Fallbacks: prefer role from sign-in response if available, otherwise hard redirect
+          const role = (data?.user as { role?: string } | undefined)?.role ?? null
+          if (role === Roles.ADMIN) {
+            router.push("/admin-dashboard")
+          } else if (role === Roles.USER) {
+            router.push("/dashboard")
+          } else if (role) {
+            // Unknown role string — navigate to dashboard by default
+            router.push("/dashboard")
+          } else {
+            // Last resort: full page reload so backend can apply session cookie if needed
+            if (typeof window !== "undefined") window.location.assign("/dashboard")
+          }
 
       } catch (error) {
 
