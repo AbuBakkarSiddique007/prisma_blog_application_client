@@ -1,5 +1,6 @@
+import { cookies } from "next/headers"
 import { env } from "../../env"
-import type { BlogApiResponse } from "@/types/blog.type"
+import type { BlogApiResponse, BlogPost } from "@/types/blog.type"
 
 const API_URL = env.API_URL
 
@@ -11,6 +12,12 @@ interface GetBlogsParams {
 interface ServiceOptions {
     cache?: RequestCache,
     revalidate?: number,
+}
+
+export interface BlogData {
+    title: string,
+    content: string,
+    tags?: string[],
 }
 
 export const blogService = {
@@ -44,6 +51,14 @@ export const blogService = {
                 config.next = { revalidate: options.revalidate }
             }
 
+            config.next = { ...config.next, tags: ["blogPosts"] }
+
+            // const res = await fetch(url.toString(), {
+            //     next : {
+            //         tags: ["blogPosts"]
+            //     }
+            // })
+
 
             const res = await fetch(url.toString(), config)
 
@@ -67,16 +82,16 @@ export const blogService = {
 
     getBlogById: async (id: string) => {
         try {
-            
+
             const res = await fetch(`${API_URL}/posts/${id}`, {})
-            
+
             const data = await res.json()
-            
+
             return {
                 data: data.data,
                 error: null
             }
-            
+
         } catch (err: unknown) {
             const message = err instanceof Error ? err.message : String(err);
             return {
@@ -85,4 +100,41 @@ export const blogService = {
             }
         }
     },
+
+    createBlogPost: async (blogData: BlogData) => {
+        try {
+            const cookieStore = await cookies()
+
+            const res = await fetch(`${API_URL}/posts`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Cookie: cookieStore.toString()
+                },
+                body: JSON.stringify(blogData),
+            });
+
+            const data = await res.json();
+
+            if(data.error){
+                return {
+                    data: null,
+                    error: { message: data.error.message  || "Failed to create blog post" }
+                }
+            }
+
+            return {
+                data: data.data,
+                error: null
+            }
+
+        } catch (error) {
+            return {
+                data: null,
+                error: { message: "Something went wrong while creating the blog post" }
+            }
+
+        }
+
+    }
 }

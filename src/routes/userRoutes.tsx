@@ -5,8 +5,8 @@ export const userRoutes :Route[]= [
         title: "Blog Management",
         items: [
             {
-                title: "Analytics",
-                url: "/analytics",
+                title: "Create Blog",
+                url: "/dashboard/create-blog",
             },
         ],
     }

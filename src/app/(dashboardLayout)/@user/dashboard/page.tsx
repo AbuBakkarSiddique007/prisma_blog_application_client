@@ -1,11 +1,7 @@
+import { redirect } from "next/navigation";
+
 const UserDashboard = () => {
-    return (
-        <div>
-            <h1>
-             This is User Dashboard
-            </h1>
-        </div>
-    );
+    return redirect("/dashboard/create-blog");
 };
 
 export default UserDashboard;

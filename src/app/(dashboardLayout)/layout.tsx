@@ -1,4 +1,6 @@
 import { AppSidebar } from "@/components/layout/app-sidebar"
+import Roles from "@/constants/role"
+import { userService } from "@/services/user.service"
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -14,7 +16,7 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar"
 
-export default function DashboardLayout(
+export default async function DashboardLayout(
 
   {
     admin,
@@ -26,8 +28,14 @@ export default function DashboardLayout(
   }) {
 
 
+  // read session server-side and determine role
+  const { data: session } = await userService.getSession()
+  const role = (session?.user?.role as string) ?? Roles.USER
+
+  console.log("DashboardLayout session:", session, "role:", role)
+
   const userInfo = {
-    role: "admin"
+    role,
   }
 
   return (
@@ -36,11 +44,11 @@ export default function DashboardLayout(
       <SidebarInset>
         <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4">
           <SidebarTrigger className="-ml-1" />
-          <Separator
+          {/* <Separator
             orientation="vertical"
             className="mr-2 data-[orientation=vertical]:h-4"
-          />
-          <Breadcrumb>
+          /> */}
+          {/* <Breadcrumb>
             <BreadcrumbList>
               <BreadcrumbItem className="hidden md:block">
                 <BreadcrumbLink href="#">
@@ -52,14 +60,14 @@ export default function DashboardLayout(
                 <BreadcrumbPage>Data Fetching</BreadcrumbPage>
               </BreadcrumbItem>
             </BreadcrumbList>
-          </Breadcrumb>
+          </Breadcrumb> */}
         </header>
         <div className="flex flex-1 flex-col gap-4 p-4">
           {/* {admin}
           {user} */}
 
           {
-            userInfo.role === "admin" ? admin : user
+            userInfo.role === Roles.ADMIN ? admin : user
           }
 
         </div>
